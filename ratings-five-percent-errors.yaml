@@ -1,0 +1,30 @@
+##################################################################################################
+# Ratings 5% Error Rule
+##################################################################################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ratings-v1
+  labels:
+    app: ratings
+    version: v1
+spec:
+  selector:
+    matchLabels:
+      app: ratings
+      version: v1
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ratings
+        version: v1
+    spec:
+      containers:
+      - name: ratings
+        image: nrjpoddar/bookinfo-ratings-v1-fault-injected
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9080
+---
+

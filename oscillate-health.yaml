@@ -1,0 +1,53 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: aspen-mesh-mttr-oscillate-health
+  namespace: istio-system
+spec:
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+      name: aspen-mesh-mttr-oscillate-health
+      labels:
+        job-name: aspen-mesh-mttr-oscillate-health
+    spec:
+      containers:
+        - name: aspen-mesh-mttr-oscillate-health
+          image: quay.io/tartale/tools:oscillate-health-v1
+          imagePullPolicy: Always
+          env:
+            - name: INTERVAL
+              value: "1200"
+      serviceAccount: aspen-mesh-oscillate-health
+      serviceAccountName: aspen-mesh-oscillate-health
+      restartPolicy: OnFailure
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: aspen-mesh-oscillate-health
+  namespace: istio-system
+  # labels:
+  #   app: aspen-mesh-controlplane
+  #   chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+  #   heritage: {{ .Release.Service }}
+  #   release: {{ .Release.Name }}
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: aspen-mesh-oscillate-health
+  # labels:
+  #   app: aspen-mesh-oscillate-health
+  #   chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+  #   heritage: {{ .Release.Service }}
+  #   release: {{ .Release.Name }}
+subjects:
+  - kind: ServiceAccount
+    name: aspen-mesh-oscillate-health
+    namespace: istio-system
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
