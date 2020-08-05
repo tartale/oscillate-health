@@ -20,19 +20,19 @@ roleRef:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: aspen-mesh-mttr-oscillate-health
+  name: aspen-mesh-oscillate-health
   namespace: default
 spec:
   template:
     metadata:
       annotations:
         sidecar.istio.io/inject: "false"
-      name: aspen-mesh-mttr-oscillate-health
+      name: aspen-mesh-oscillate-health
       labels:
-        job-name: aspen-mesh-mttr-oscillate-health
+        job-name: aspen-mesh-oscillate-health
     spec:
       containers:
-        - name: aspen-mesh-mttr-oscillate-health
+        - name: aspen-mesh-oscillate-health
           image: quay.io/tartale/tools:oscillate-health-v1
           imagePullPolicy: Always
           env:
