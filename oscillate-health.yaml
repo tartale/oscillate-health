@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
         - name: aspen-mesh-oscillate-health
-          image: quay.io/tartale/tools:oscillate-health-v1
+          image: quay.io/tartale/tools:oscillate-health-latest
           imagePullPolicy: Always
           env:
             - name: INTERVAL

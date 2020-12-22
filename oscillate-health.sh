@@ -1,27 +1,31 @@
 #!/bin/bash
 
 THIS_SCRIPT_DIR="$(cd $(dirname ${BASH_SOURCE}); pwd)"
+INTERVAL=${INTERVAL:-"1200"}
 
-counter=0
 while true
 do
     echo "--------------------------------------------------"
     date
-    echo "five percent errors:"
-    /usr/bin/kubectl apply -f ${THIS_SCRIPT_DIR}/ratings-five-percent-errors.yaml
+    filepath="${THIS_SCRIPT_DIR}/ratings-five-percent-errors.yaml"
+    echo "kubectl apply -f ${filepath}"
+    kubectl apply -f "${filepath}"
+    echo "waiting for ratings deployment to be available"
+    sleep 3 && kubectl wait --for=condition=available deployment/ratings-v1
+    echo "restarting reviews-v3"
+    kubectl delete pods -l 'app=reviews,version=v3'
     echo "waiting ${INTERVAL} seconds"
     sleep ${INTERVAL}
+    
     echo "--------------------------------------------------"
     date
-    echo "no errors:"
-    /usr/bin/kubectl apply -f ${THIS_SCRIPT_DIR}/ratings-normal.yaml
-    counter=$((counter+1))
-    if [[ ${counter} -eq 10 ]]; then
-        # allow for a full recovery
-        echo "waiting 1 hour, to allow full recovery"
-        sleep 3600
-    else
-        echo "waiting ${INTERVAL} seconds"
-        sleep ${INTERVAL}
-    fi
+    filepath="${THIS_SCRIPT_DIR}/ratings-normal.yaml"
+    echo "kubectl apply -f ${filepath}"
+    kubectl apply -f "${filepath}"
+    echo "waiting for ratings deployment to be available"
+    sleep 3 && kubectl wait --for=condition=available deployment/ratings-v1
+    echo "restarting reviews-v3"
+    kubectl delete pods -l 'app=reviews,version=v3'
+    echo "waiting ${INTERVAL} seconds"
+    sleep ${INTERVAL}
 done
