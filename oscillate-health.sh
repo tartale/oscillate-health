@@ -2,6 +2,14 @@
 
 THIS_SCRIPT_DIR="$(cd $(dirname ${BASH_SOURCE}); pwd)"
 INTERVAL=${INTERVAL:-"1200"}
+DEBUG="${DEBUG:-false}"
+if [ "${DEBUG}" == "true" ];
+then
+    SET_DEBUG="-x"
+else
+    SET_DEBUG="+x"
+fi
+set ${SET_DEBUG}
 
 function restartPods {
   if [ $# -lt 2 ]; then
