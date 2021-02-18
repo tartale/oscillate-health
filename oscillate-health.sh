@@ -3,6 +3,31 @@
 THIS_SCRIPT_DIR="$(cd $(dirname ${BASH_SOURCE}); pwd)"
 INTERVAL=${INTERVAL:-"1200"}
 
+function restartPods {
+  if [ $# -lt 2 ]; then
+    echo "usage: ${0} <namespace-array> <deployment-array>"
+    return 1
+  fi
+
+  namespaces=("${!1}")
+  deployments=("${!2}")
+  isRestartFailed=false
+  for namespace in "${namespaces[@]}"; do
+    for deployment in "${deployments[@]}"; do
+      echo "restarting deployment/${deployment}.${namespace}"
+      kubectl rollout restart deployment ${deployment} -n ${namespace} || isRestartFailed=true 
+      kubectl rollout status deployment ${deployment} -n ${namespace} || isRestartFailed=true
+    done
+  done
+
+  if [ "$isRestartFailed" = true ]; then
+    echo "failed to restart all the pods"
+    return 1
+  fi
+}
+
+namespaces=("default")
+deployments=("reviews-v1" "reviews-v2" "reviews-v3")
 while true
 do
     echo "--------------------------------------------------"
@@ -12,8 +37,7 @@ do
     kubectl apply -f "${filepath}"
     echo "waiting for ratings deployment to be available"
     sleep 3 && kubectl wait --for=condition=available deployment/ratings-v1
-    echo "restarting reviews-v3"
-    kubectl delete pods -l 'app=reviews,version=v3'
+    restartPods namespaces[@] deployments[@]
     echo "waiting ${INTERVAL} seconds"
     sleep ${INTERVAL}
     
@@ -24,8 +48,5 @@ do
     kubectl apply -f "${filepath}"
     echo "waiting for ratings deployment to be available"
     sleep 3 && kubectl wait --for=condition=available deployment/ratings-v1
-    echo "restarting reviews-v3"
-    kubectl delete pods -l 'app=reviews,version=v3'
-    echo "waiting ${INTERVAL} seconds"
-    sleep ${INTERVAL}
+    restartPods namespaces[@] deployments[@]
 done
